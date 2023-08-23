@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    environment:
+      - SERVER_PORT=${PORT_SERVER}
+      - CONNECTIONSTRING=${CONNECTION}
+    depends_on:
+      mongo:
+        condition: service_started
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    command: npm run debug
+
+  mongo:
+    image: mongo:4.2.8
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yml"
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    ports:
+      - 4040:4040
+volumes:
+  mongodb:
+  mongodb_config:
